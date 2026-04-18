@@ -1,0 +1,15 @@
+repos:
+  - repo: https://github.com/rust-lang/rustfmt
+    rev: stable
+    hooks:
+      - id: rustfmt
+
+  - repo: https://github.com/rust-lang/rust-clippy
+    rev: stable
+    hooks:
+      - id: clippy
+
+  - repo: https://github.com/crate-ci/typos
+    rev: stable
+    hooks:
+      - id: typos

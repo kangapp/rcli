@@ -1,0 +1,11 @@
+[changelog]
+header = """
+# Changelog\n
+All notable changes to this project will be documented in this file.\n
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+"""
+trim = true
+
+[git]
+conventional_commits = true
+filter_unconventional = true

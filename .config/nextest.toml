@@ -1,0 +1,5 @@
+[profile.default]
+retry = 2
+
+[profile.ci]
+fail-fast = false
