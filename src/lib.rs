@@ -1,56 +1,55 @@
-#![allow(non_snake_case)]
+mod opts;
+mod process;
 
-/// 两数相加
-pub fn add(a: i32, b: i32) -> i32 {
-    a + b
-}
-
-/// 两数相减
-pub fn subtract(a: i32, b: i32) -> i32 {
-    a - b
-}
-
-/// 两数相乘
-pub fn multiply(a: i32, b: i32) -> i32 {
-    a * b
-}
-
-/// 两数相除（带错误处理）
-pub fn divide(a: i32, b: i32) -> Option<i32> {
-    if b == 0 {
-        None
-    } else {
-        Some(a / b)
-    }
-}
+pub use opts::{Cli, Subcommand};
+pub use process::process_csv;
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
 
     #[test]
-    fn test_add() {
-        assert_eq!(add(2, 3), 5);
-        assert_eq!(add(-1, 1), 0);
-        assert_eq!(add(0, 0), 0);
+    fn test_process_csv_with_test_data() {
+        let input = "assets/test.csv";
+        let output = "assets/output_test.json";
+
+        process_csv(input, output).unwrap();
+
+        let content = fs::read_to_string(output).unwrap();
+        let json: serde_json::Value = serde_json::from_str(&content).unwrap();
+
+        assert!(json.is_array());
+        assert_eq!(json.as_array().unwrap().len(), 2);
+
+        let first = &json[0];
+        assert_eq!(first["Name"].as_str().unwrap(), "刘付康");
+        assert_eq!(first["Age"].as_u64().unwrap(), 30);
+        assert_eq!(first["Address"].as_str().unwrap(), "七所大院");
+
+        fs::remove_file(output).ok();
     }
 
     #[test]
-    fn test_subtract() {
-        assert_eq!(subtract(5, 3), 2);
-        assert_eq!(subtract(0, 5), -5);
-    }
+    fn test_members_deserialization() {
+        use serde::Deserialize;
+        #[derive(Debug, Deserialize)]
+        #[serde(rename_all = "PascalCase")]
+        struct Members {
+            name: String,
+            age: u32,
+            #[allow(dead_code)]
+            address: String,
+        }
 
-    #[test]
-    fn test_multiply() {
-        assert_eq!(multiply(3, 4), 12);
-        assert_eq!(multiply(-2, 3), -6);
-    }
+        let json = r#"[
+            {"Name": "刘付康", "Age": 30, "Address": "七所大院"},
+            {"Name": "唐玮", "Age": 28, "Address": "七所大院"}
+        ]"#;
 
-    #[test]
-    fn test_divide() {
-        assert_eq!(divide(10, 2), Some(5));
-        assert_eq!(divide(10, 3), Some(3));
-        assert_eq!(divide(10, 0), None);
+        let members: Vec<Members> = serde_json::from_str(json).unwrap();
+        assert_eq!(members.len(), 2);
+        assert_eq!(members[0].name, "刘付康");
+        assert_eq!(members[0].age, 30);
     }
 }
